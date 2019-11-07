@@ -5,5 +5,5 @@ var opts = {
 };
 
 libzfs.zfsGet(opts, function(err, zfsInfo) {
-	console.log('yay... we are being called');
+	console.log('zfsInfo: ' + zfsInfo);
 });

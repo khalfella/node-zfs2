@@ -19,7 +19,7 @@ class ZFSGetWorker: public AsyncWorker {
 		void HandleOKCallback() {
 			Local<Value> argv[] = {
 				Nan::Null(),
-				Nan::Null()
+				Nan::New<String>(this->name.c_str()).ToLocalChecked()
 			};
 			callback->Call(2, argv, async_resource);
 		}
@@ -39,7 +39,9 @@ NAN_METHOD(zfsGet) {
         if (Nan::Get(opts, name_prop).ToLocal(&name) && name->IsString()) {
 		Nan::Callback *cb = new Nan::Callback(To<Function>(info[1])
 		    .ToLocalChecked());
-		AsyncQueueWorker(new ZFSGetWorker(cb, "filesystem_name"));
+		v8::String::Utf8Value str(name->ToString());
+		std::string s(*str, str.length());
+		AsyncQueueWorker(new ZFSGetWorker(cb, s));
 	}
 }
 
