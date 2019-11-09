@@ -108,4 +108,4 @@ NAN_MODULE_INIT(Init) {
 	        .ToLocalChecked());
 }
 
-NODE_MODULE(libzfs, Init)
+NODE_MODULE(zfs2, Init)

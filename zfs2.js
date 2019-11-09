@@ -1,4 +1,4 @@
-const libzfs = require('./build/Release/zfs');
+const libzfs = require('./build/Release/zfs2');
 
 var opts = {
     "name": "zones/66921791-ce69-ee88-bceb-93f91c0bd2f7/data"

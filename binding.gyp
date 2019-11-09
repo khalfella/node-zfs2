@@ -1,8 +1,8 @@
 {
     "targets": [
         {
-            "target_name": "libzfs",
-            "sources": [ "libzfs.cpp" ],
+            "target_name": "zfs2",
+            "sources": [ "zfs2.cpp" ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")"
             ],
