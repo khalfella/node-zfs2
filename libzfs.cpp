@@ -1,6 +1,7 @@
 #include <nan.h>
 #include <iostream>
 #include <libzfs.h>
+#include <map>
 
 using namespace Nan;
 using namespace v8;
@@ -10,36 +11,41 @@ class ZFSGetWorker: public AsyncWorker {
 		ZFSGetWorker(Nan::Callback *callback, std::string name) :
 		AsyncWorker(callback) {
 			this->name = name;
-			this->props = NULL;
 			this->errorMessage = "";
 		}
 
 
 		void Execute() {
 			libzfs_handle_t *lh;
-			zfs_handle_t *zfsh;
 
 			if ((lh = libzfs_init()) == NULL) {
 				this->errorMessage = "error initialized libzfs";
 				return;
 			}
-			if ((zfsh = zfs_open(lh, this->name.c_str(), ZFS_TYPE_DATASET)) == NULL) {
+			if ((this->zfsh = zfs_open(lh, this->name.c_str(), ZFS_TYPE_DATASET)) == NULL) {
 				this->errorMessage = "error initialized libzfs";
-				goto out2;
+				libzfs_fini(lh);
+				return;
 			}
 
-			if((this->props = zfs_get_user_props(zfsh)) == NULL) {
-				this->errorMessage = "failed to get dataset properties";
-				goto out1;
-			}
+			auto cb = [](int prop, void *data)  {
+				ZFSGetWorker *self = (ZFSGetWorker*) data;
 
-			//nvlist_free(props);
-			// We are leaking handles!!
-			return;
+				char buf[ZFS_MAXPROPLEN];
+				if (zfs_prop_get(self->zfsh, (zfs_prop_t) prop, buf, sizeof(buf), NULL, NULL, 0, _B_TRUE) == 0) {
+					if (zfs_prop_is_string((zfs_prop_t) prop)) {
+						self->string_props.insert(std::pair<std::string, std::string>(zfs_prop_to_name((zfs_prop_t) prop), buf));
+					} else {
+						self->numeric_props.insert(std::pair<std::string, double>(zfs_prop_to_name((zfs_prop_t) prop), std::stod(buf)));
+					}
+				}
 
-out1:
+				return ((int)ZPROP_CONT);
+			};
+
+			zprop_iter(cb, this, _B_TRUE, _B_TRUE, (zfs_type_t) ZFS_TYPE_DATASET);
+
 			zfs_close(zfsh);
-out2:
 			libzfs_fini(lh);
 		}
 
@@ -57,32 +63,24 @@ out2:
 
 			Local<Object> props = Nan::New<Object>();
 
-			nvpair_t *nvp;
-			for (nvp = nvlist_next_nvpair(this->props, NULL); nvp != NULL;
-			    nvp = nvlist_next_nvpair(this->props, nvp)) {
-
-				Local<String> key = Nan::New<String>(nvpair_name(nvp)).ToLocalChecked();
-				data_type_t ptype = nvpair_type(nvp);
-				std::cout<<"iteration" << (int) ptype;
-
-				if (ptype == DATA_TYPE_STRING) {
-					char *str;
-					nvpair_value_string(nvp, &str);
-					Nan::Set(props, key, Nan::New<String>(str).ToLocalChecked());
-				} else if( ptype == DATA_TYPE_BOOLEAN) {
-					boolean_t b;
-					nvpair_value_boolean_value(nvp, &b);
-					Nan::Set(props, key, Nan::New<Boolean>(b));
-				}
+			for (auto itr = this->string_props.begin(); itr != this->string_props.end(); ++itr) {
+				Local<String> key = Nan::New<String>(itr->first).ToLocalChecked();
+				Nan::Set(props,  key, Nan::New<String>(itr->second).ToLocalChecked());
 			}
 
+			for (auto itr = this->numeric_props.begin(); itr != this->numeric_props.end(); ++itr) {
+				Local<String> key = Nan::New<String>(itr->first).ToLocalChecked();
+				Nan::Set(props,  key, Nan::New<Number>(itr->second));
+			}
 			Local<Value> argv[] = { Nan::Null(), props};
 			callback->Call(2, argv, async_resource);
 		}
 	private:
 		std::string name;
 		std::string errorMessage;
-		nvlist_t *props;
+		zfs_handle_t *zfsh;
+		std::map<std::string, std::string> string_props;
+		std::map<std::string, double> numeric_props;
 };
 
 NAN_METHOD(zfsGet) {
