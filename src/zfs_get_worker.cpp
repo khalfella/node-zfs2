@@ -1,7 +1,5 @@
 #include <nan.h>
-#include <iostream>
 #include <libzfs.h>
-#include <map>
 
 #include "zfs_get_worker.h"
 

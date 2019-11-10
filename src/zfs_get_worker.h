@@ -1,6 +1,8 @@
+#ifndef __ZFS_GET_WORKER__
+#define __ZFS_GET_WORKER__
+
+
 #include <nan.h>
-#include <iostream>
-#include <libzfs.h>
 #include <map>
 
 using namespace v8;
@@ -18,3 +20,5 @@ class ZFSGetWorker : public AsyncWorker {
 		std::map<std::string, std::string> string_props;
 		std::map<std::string, double> numeric_props;
 };
+
+#endif // __ZFS_GET_WORKER__

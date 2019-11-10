@@ -7,9 +7,17 @@ var opts = {
 
 zfs.zfsGet(opts, function(err, fsInfo) {
 	if (err) {
-		console.error('error, something went wrong');
+		console.error('zfsGet(): error, something went wrong');
 		return;
 	}
 
-	console.log(JSON.stringify(fsInfo, null, 2));
+	console.log(opts.name + ' has ' + fsInfo.available + ' bytes available');
+});
+
+zfs.zpoolStatus({"name": "zones"}, function (err, zpoolStatus) {
+	if (err) {
+		console.error('zpoolStatus(): error, something went wrong');
+		return;
+	}
+	console.log('zones pool status is: ' + zpoolStatus);
 });
