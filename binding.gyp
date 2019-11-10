@@ -2,7 +2,10 @@
     "targets": [
         {
             "target_name": "zfs2",
-            "sources": [ "src/zfs2.cpp" ],
+            "sources": [
+                "src/zfs.cpp",
+                "src/zfs_get_worker.cpp"
+            ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")"
             ],

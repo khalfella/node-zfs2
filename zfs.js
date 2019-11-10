@@ -11,5 +11,5 @@ zfs.zfsGet(opts, function(err, fsInfo) {
 		return;
 	}
 
-	console.log(fsName + ' has ' + fsInfo.available + ' bytes available');
+	console.log(JSON.stringify(fsInfo, null, 2));
 });
