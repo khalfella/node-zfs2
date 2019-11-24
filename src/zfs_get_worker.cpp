@@ -1,28 +1,29 @@
 #include <nan.h>
-#include <libzfs.h>
 
 #include "zfs_get_worker.h"
 
 using namespace Nan;
 using namespace v8;
 
-ZFSGetWorker::ZFSGetWorker(Nan::Callback *callback, std::string name) :
+ZFSGetWorker::ZFSGetWorker(Nan::Callback *callback, std::string name, libzfs_handle_t *lzfsh, std::mutex *lzfsLock) :
 AsyncWorker(callback) {
 	this->name = name;
+        this->lzfsh = lzfsh;
+	this->lzfsLock = lzfsLock;
 	this->errorMessage = "";
 }
 
 
 void ZFSGetWorker::Execute() {
-	libzfs_handle_t *lh;
 
-	if ((lh = libzfs_init()) == NULL) {
+	std::lock_guard<std::mutex> lck(*this->lzfsLock);
+
+	if (this->lzfsh == NULL) {
 		this->errorMessage = "error initialized libzfs";
 		return;
 	}
-	if ((this->zfsh = zfs_open(lh, this->name.c_str(), ZFS_TYPE_DATASET)) == NULL) {
+	if ((this->zfsh = zfs_open(this->lzfsh, this->name.c_str(), ZFS_TYPE_DATASET)) == NULL) {
 		this->errorMessage = "error initialized libzfs";
-		libzfs_fini(lh);
 		return;
 	}
 
@@ -43,9 +44,7 @@ void ZFSGetWorker::Execute() {
 	};
 
 	zprop_iter(cb, this, _B_TRUE, _B_TRUE, (zfs_type_t) ZFS_TYPE_DATASET);
-
 	zfs_close(zfsh);
-	libzfs_fini(lh);
 }
 
 void ZFSGetWorker::HandleOKCallback() {

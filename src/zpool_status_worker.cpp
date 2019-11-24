@@ -1,29 +1,30 @@
 #include <nan.h>
-#include <libzfs.h>
 
 #include "zpool_status_worker.h"
 
 using namespace Nan;
 using namespace v8;
 
-ZPoolStatusWorker::ZPoolStatusWorker(Nan::Callback *callback, std::string name) :
-AsyncWorker(callback) {
+ZPoolStatusWorker::ZPoolStatusWorker(Nan::Callback *callback, std::string name,
+    libzfs_handle_t *lzfsh, std::mutex* lzfsLock) : AsyncWorker(callback) {
 	this->name = name;
+	this->lzfsh = lzfsh;
+	this->lzfsLock = lzfsLock;
 	this->errorMessage = "";
 }
 
 
 void ZPoolStatusWorker::Execute() {
-	libzfs_handle_t *lh;
 	zpool_handle_t *zph;
 
-	if ((lh = libzfs_init()) == NULL) {
+	std::lock_guard<std::mutex> lck(*this->lzfsLock);
+
+	if (this->lzfsh == NULL) {
 		this->errorMessage = "error initialized libzfs";
 		return;
 	}
-	if ((zph = zpool_open(lh, this->name.c_str())) == NULL) {
+	if ((zph = zpool_open(this->lzfsh, this->name.c_str())) == NULL) {
 		this->errorMessage = "filed to open the pool";
-		libzfs_fini(lh);
 		return;
 	}
 
@@ -31,14 +32,11 @@ void ZPoolStatusWorker::Execute() {
 	if (zpool_get_prop(zph, ZPOOL_PROP_HEALTH, buf, sizeof(buf), NULL, _B_TRUE) != 0) {
 		this->errorMessage = "filed to get pool health state";
 		zpool_close(zph);
-		libzfs_fini(lh);
 		return;
 	}
 
 	this->state = buf;
-
 	zpool_close(zph);
-	libzfs_fini(lh);
 }
 
 void ZPoolStatusWorker::HandleOKCallback() {

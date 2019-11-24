@@ -2,12 +2,19 @@
 #include <iostream>
 #include <libzfs.h>
 #include <map>
+#include <mutex>
 
 #include "zfs_get_worker.h"
 #include "zpool_status_worker.h"
 
 using namespace Nan;
 using namespace v8;
+
+libzfs_handle_t *lzfs = NULL;
+std::mutex lzfsLock;
+
+
+
 
 NAN_METHOD(zfsGet) {
 	if (info.Length() < 2 || !info[0]->IsObject() || !info[1]->IsFunction()) {
@@ -23,7 +30,7 @@ NAN_METHOD(zfsGet) {
 		    .ToLocalChecked());
 		v8::String::Utf8Value str(name->ToString());
 		std::string s(*str, str.length());
-		AsyncQueueWorker(new ZFSGetWorker(cb, s));
+		AsyncQueueWorker(new ZFSGetWorker(cb, s, lzfs, &lzfsLock));
 	}
 }
 
@@ -41,11 +48,15 @@ NAN_METHOD(zpoolStatus) {
 		    .ToLocalChecked());
 		v8::String::Utf8Value str(name->ToString());
 		std::string s(*str, str.length());
-		AsyncQueueWorker(new ZPoolStatusWorker(cb, s));
+		AsyncQueueWorker(new ZPoolStatusWorker(cb, s, lzfs, &lzfsLock));
 	}
 }
 
 NAN_MODULE_INIT(Init) {
+	lzfsLock.lock();
+	lzfs = libzfs_init();
+	lzfsLock.unlock();
+
 	Nan::Set(target,
 	    New<String>("zfsGet").ToLocalChecked(),
 	    GetFunction(New<FunctionTemplate>(zfsGet))

@@ -11,7 +11,7 @@ zfs.zfsGet(opts, function(err, fsInfo) {
 		return;
 	}
 
-	console.log(opts.name + ' has ' + fsInfo.available + ' bytes available');
+	console.log(opts.name + ' has ' + JSON.stringify(fsInfo.available) + ' bytes available');
 });
 
 zfs.zpoolStatus({"name": "zones"}, function (err, zpoolStatus) {
