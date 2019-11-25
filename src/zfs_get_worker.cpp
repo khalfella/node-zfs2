@@ -27,18 +27,23 @@ void ZFSGetWorker::Run(libzfs_handle_t *lzfsh) {
 		auto *self = (ZFSGetWorker*) data;
 		auto prop = (zfs_prop_t) p;
 
-		char buf[ZFS_MAXPROPLEN];
-		if (zfs_prop_get(self->zfsh, prop, buf, sizeof(buf), NULL, NULL, 0, _B_TRUE) == 0) {
-			if (zfs_prop_is_string(prop)) {
-				self->string_props.insert(
-				    std::pair<std::string, std::string>(zfs_prop_to_name(prop), buf));
-			} else {
-				self->numeric_props.insert(
-				    std::pair<std::string, double>(zfs_prop_to_name( prop),
-				        std::stod(buf)));
-			}
-		}
+		zprop_source_t source;
+		char value_buf[ZFS_MAXPROPLEN];
+		char where_buf[ZFS_MAXPROPLEN];
+		if (zfs_prop_get(self->zfsh, prop, value_buf, sizeof(value_buf),
+		    &source, where_buf, sizeof(where_buf), _B_TRUE) == 0) {
 
+			ZFSProperty p;
+			p.name = zfs_prop_to_name(prop);
+			p.is_num = !zfs_prop_is_string(prop);
+			p.value = value_buf;
+
+			// XXX: Export these attributes
+			p.source = source;
+			p.where = where_buf;
+
+			self->props.push_back(p);
+		}
 		return ((int)ZPROP_CONT);
 	};
 
@@ -58,15 +63,22 @@ void ZFSGetWorker::HandleOKCallback() {
 	}
 	Local<Object> props = Nan::New<Object>();
 
-	for (auto itr = this->string_props.begin(); itr != this->string_props.end(); ++itr) {
-		Local<String> key = Nan::New<String>(itr->first).ToLocalChecked();
-		Nan::Set(props,  key, Nan::New<String>(itr->second).ToLocalChecked());
+	for (auto prop = this->props.begin(); prop != this->props.end(); prop++) {
+		Local<String> key = Nan::New<String>(prop->name).ToLocalChecked();
+		Local<Object> value = Nan::New<Object>();
+		if (prop->is_num) {
+			Nan::Set(value,
+			    Nan::New<String>("value").ToLocalChecked(),
+			    Nan::New<Number>(std::stod(prop->value)));
+		} else {
+			Nan::Set(value,
+			    Nan::New<String>("value").ToLocalChecked(),
+			    Nan::New<String>(prop->value.c_str()).ToLocalChecked());
+		}
+
+		Nan::Set(props,  key, value);
 	}
 
-	for (auto itr = this->numeric_props.begin(); itr != this->numeric_props.end(); ++itr) {
-		Local<String> key = Nan::New<String>(itr->first).ToLocalChecked();
-		Nan::Set(props,  key, Nan::New<Number>(itr->second));
-	}
 	Local<Value> argv[] = { Nan::Null(), props};
 	callback->Call(2, argv, async_resource);
 }

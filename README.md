@@ -20,7 +20,7 @@ zfs.zfsGet(opts, function(err, fsInfo) {
                 return;
         }
 
-        console.log(fsName + ' has ' + fsInfo.available + ' bytes available');
+        console.log(fsName + ' has ' + fsInfo.available.value + ' bytes available');
 });
 
 ```

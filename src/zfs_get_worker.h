@@ -21,8 +21,7 @@ class ZFSGetWorker : public ZFSWorker {
 		std::string name;
 		std::string errorMessage;
 		zfs_handle_t *zfsh;
-		std::map<std::string, std::string> string_props;
-		std::map<std::string, double> numeric_props;
+		std::vector<ZFSProperty> props;
 };
 
 #endif // __ZFS_GET_WORKER__
