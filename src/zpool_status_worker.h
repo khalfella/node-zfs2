@@ -5,20 +5,20 @@
 #include <libzfs.h>
 #include <mutex>
 
+#include "zfs_worker.h"
+
 using namespace v8;
 using namespace Nan;
 
-class ZPoolStatusWorker : public AsyncWorker {
+class ZPoolStatusWorker : public ZFSWorker {
 	public:
-		ZPoolStatusWorker(Nan::Callback *callback, std::string name, libzfs_handle_t *lzfsh, std::mutex*);
-		void Execute();
+		ZPoolStatusWorker(Nan::Callback *callback, std::string name);
+		void Run(libzfs_handle_t *);
 		void HandleOKCallback();
 	private:
 		std::string name;
 		std::string errorMessage;
 		std::string state;
-		libzfs_handle_t *lzfsh;
-		std::mutex* lzfsLock;
 };
 
 #endif // __ZPOOL_STATUS_WORKER__

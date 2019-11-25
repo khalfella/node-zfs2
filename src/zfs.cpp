@@ -6,14 +6,10 @@
 
 #include "zfs_get_worker.h"
 #include "zpool_status_worker.h"
+#include "zfs_worker.h"
 
 using namespace Nan;
 using namespace v8;
-
-libzfs_handle_t *lzfs = NULL;
-std::mutex lzfsLock;
-
-
 
 
 NAN_METHOD(zfsGet) {
@@ -30,7 +26,7 @@ NAN_METHOD(zfsGet) {
 		    .ToLocalChecked());
 		v8::String::Utf8Value str(name->ToString());
 		std::string s(*str, str.length());
-		AsyncQueueWorker(new ZFSGetWorker(cb, s, lzfs, &lzfsLock));
+		AsyncQueueWorker(new ZFSGetWorker(cb, s));
 	}
 }
 
@@ -40,31 +36,30 @@ NAN_METHOD(zpoolStatus) {
 	}
 
 	Local<Object> opts = info[0]->ToObject();
-        Local<String> name_prop = Nan::New<String>("name").ToLocalChecked();
+	Local<String> name_prop = Nan::New<String>("name").ToLocalChecked();
 
 	Local<v8::Value> name;
-        if (Nan::Get(opts, name_prop).ToLocal(&name) && name->IsString()) {
+	if (Nan::Get(opts, name_prop).ToLocal(&name) && name->IsString()) {
 		Nan::Callback *cb = new Nan::Callback(To<Function>(info[1])
 		    .ToLocalChecked());
 		v8::String::Utf8Value str(name->ToString());
 		std::string s(*str, str.length());
-		AsyncQueueWorker(new ZPoolStatusWorker(cb, s, lzfs, &lzfsLock));
+		AsyncQueueWorker(new ZPoolStatusWorker(cb, s));
 	}
 }
 
 NAN_MODULE_INIT(Init) {
-	lzfsLock.lock();
-	lzfs = libzfs_init();
-	lzfsLock.unlock();
+	ZFSWorker::InitializeLibZFS();
 
 	Nan::Set(target,
 	    New<String>("zfsGet").ToLocalChecked(),
 	    GetFunction(New<FunctionTemplate>(zfsGet))
 	        .ToLocalChecked());
+
 	Nan::Set(target,
 	    New<String>("zpoolStatus").ToLocalChecked(),
 	    GetFunction(New<FunctionTemplate>(zpoolStatus))
-	        .ToLocalChecked());
+	    .ToLocalChecked());
 }
 
 NODE_MODULE(zfs2, Init)

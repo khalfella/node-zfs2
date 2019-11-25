@@ -5,24 +5,20 @@
 using namespace Nan;
 using namespace v8;
 
-ZFSGetWorker::ZFSGetWorker(Nan::Callback *callback, std::string name, libzfs_handle_t *lzfsh, std::mutex *lzfsLock) :
-AsyncWorker(callback) {
+ZFSGetWorker::ZFSGetWorker(Nan::Callback *callback, std::string name)
+    : ZFSWorker(callback) {
 	this->name = name;
-        this->lzfsh = lzfsh;
-	this->lzfsLock = lzfsLock;
 	this->errorMessage = "";
 }
 
 
-void ZFSGetWorker::Execute() {
+void ZFSGetWorker::Run(libzfs_handle_t *lzfsh) {
 
-	std::lock_guard<std::mutex> lck(*this->lzfsLock);
-
-	if (this->lzfsh == NULL) {
+	if (lzfsh == NULL) {
 		this->errorMessage = "error initialized libzfs";
 		return;
 	}
-	if ((this->zfsh = zfs_open(this->lzfsh, this->name.c_str(), ZFS_TYPE_DATASET)) == NULL) {
+	if ((this->zfsh = zfs_open(lzfsh, this->name.c_str(), ZFS_TYPE_DATASET)) == NULL) {
 		this->errorMessage = "error initialized libzfs";
 		return;
 	}
@@ -34,9 +30,12 @@ void ZFSGetWorker::Execute() {
 		char buf[ZFS_MAXPROPLEN];
 		if (zfs_prop_get(self->zfsh, prop, buf, sizeof(buf), NULL, NULL, 0, _B_TRUE) == 0) {
 			if (zfs_prop_is_string(prop)) {
-				self->string_props.insert(std::pair<std::string, std::string>(zfs_prop_to_name(prop), buf));
+				self->string_props.insert(
+				    std::pair<std::string, std::string>(zfs_prop_to_name(prop), buf));
 			} else {
-				self->numeric_props.insert(std::pair<std::string, double>(zfs_prop_to_name( prop), std::stod(buf)));
+				self->numeric_props.insert(
+				    std::pair<std::string, double>(zfs_prop_to_name( prop),
+				        std::stod(buf)));
 			}
 		}
 

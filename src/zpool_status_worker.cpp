@@ -5,25 +5,20 @@
 using namespace Nan;
 using namespace v8;
 
-ZPoolStatusWorker::ZPoolStatusWorker(Nan::Callback *callback, std::string name,
-    libzfs_handle_t *lzfsh, std::mutex* lzfsLock) : AsyncWorker(callback) {
+ZPoolStatusWorker::ZPoolStatusWorker(Nan::Callback *callback, std::string name) : ZFSWorker(callback) {
 	this->name = name;
-	this->lzfsh = lzfsh;
-	this->lzfsLock = lzfsLock;
 	this->errorMessage = "";
 }
 
 
-void ZPoolStatusWorker::Execute() {
+void ZPoolStatusWorker::Run(libzfs_handle_t *lzfsh) {
 	zpool_handle_t *zph;
 
-	std::lock_guard<std::mutex> lck(*this->lzfsLock);
-
-	if (this->lzfsh == NULL) {
-		this->errorMessage = "error initialized libzfs";
+	if (lzfsh == NULL) {
+		this->errorMessage = "error initializing libzfs";
 		return;
 	}
-	if ((zph = zpool_open(this->lzfsh, this->name.c_str())) == NULL) {
+	if ((zph = zpool_open(lzfsh, this->name.c_str())) == NULL) {
 		this->errorMessage = "filed to open the pool";
 		return;
 	}
