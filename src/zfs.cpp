@@ -6,6 +6,7 @@
 
 #include "zfs_get_worker.h"
 #include "zpool_status_worker.h"
+#include "zpool_list_worker.h"
 #include "zfs_worker.h"
 
 using namespace Nan;
@@ -48,6 +49,16 @@ NAN_METHOD(zpoolStatus) {
 	}
 }
 
+NAN_METHOD(zpoolList) {
+	if (info.Length() != 1 || !info[0]->IsFunction()) {
+		// should return an error in this case or do something.
+		return;
+	}
+
+	Nan::Callback *cb = new Nan::Callback(To<Function>(info[0]).ToLocalChecked());
+	AsyncQueueWorker(new ZPoolListWorker(cb));
+}
+
 NAN_MODULE_INIT(Init) {
 	ZFSWorker::InitializeLibZFS();
 
@@ -59,6 +70,10 @@ NAN_MODULE_INIT(Init) {
 	Nan::Set(target,
 	    New<String>("zpoolStatus").ToLocalChecked(),
 	    GetFunction(New<FunctionTemplate>(zpoolStatus))
+	    .ToLocalChecked());
+	Nan::Set(target,
+	    New<String>("zpoolList").ToLocalChecked(),
+	    GetFunction(New<FunctionTemplate>(zpoolList))
 	    .ToLocalChecked());
 }
 

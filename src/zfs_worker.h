@@ -8,6 +8,15 @@
 using namespace v8;
 using namespace Nan;
 
+class ZFSProperty {
+	public:
+		std::string	name;
+		bool		is_num;
+		std::string	value;
+		zprop_source_t	source;
+		std::string	where;
+};
+
 class ZFSWorker : public AsyncWorker {
 	public:
 		ZFSWorker(Nan::Callback *);

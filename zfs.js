@@ -21,3 +21,13 @@ zfs.zpoolStatus({"name": "zones"}, function (err, zpoolStatus) {
 	}
 	console.log('zones pool status is: ' + zpoolStatus);
 });
+
+zfs.zpoolList(function(err, zpoolList) {
+	if (err) {
+		console.error('zpoolStatus(): error, something went wrong');
+		return;
+	}
+	zpoolList.forEach(function(zp) {
+		console.log('name = ' + zp.name.value);
+	});
+})

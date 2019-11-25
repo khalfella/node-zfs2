@@ -6,7 +6,8 @@
                 "src/zfs.cpp",
                 "src/zfs_worker.cpp",
                 "src/zfs_get_worker.cpp",
-                "src/zpool_status_worker.cpp"
+                "src/zpool_status_worker.cpp",
+                "src/zpool_list_worker.cpp"
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")"
