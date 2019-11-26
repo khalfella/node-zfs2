@@ -71,9 +71,16 @@ void ZPoolListWorker::HandleOKCallback() {
 			Local<String> key = Nan::New<String>(prop->name).ToLocalChecked();
 			Local<Object> value = Nan::New<Object>();
 
-			Nan::Set(value,
-			    Nan::New<String>("value").ToLocalChecked(),
-			    Nan::New<String>(prop->value.c_str()).ToLocalChecked());
+			double num;
+			if (prop->MayBeNumericZpoolProperty(&num)) {
+				Nan::Set(value,
+				    Nan::New<String>("value").ToLocalChecked(),
+				    Nan::New<Number>(num));
+			} else {
+				Nan::Set(value,
+				    Nan::New<String>("value").ToLocalChecked(),
+				    Nan::New<String>(prop->value.c_str()).ToLocalChecked());
+			}
 
 			Nan::Set(props,  key, value);
 		}
