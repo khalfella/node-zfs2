@@ -20,10 +20,8 @@ using namespace v8;
  */
 bool ZFSProperty::MayBeNumericZpoolProperty(double *num) {
 	const char *numericProps[] = {
-	    "size", "free", "freeing", "checkpoint", "leaked", "allocated",
-	    "expandsize", "fragmentation", "capacity", "guid", "dedupration",
-	    "bootsize", "version", "dedupditto", "ashift", "maxblocksize",
-	    "maxdnodesize"
+	    "size", "free", "freeing", "leaked", "allocated", "capacity",
+	    "guid", "ashift", "maxblocksize", "maxdnodesize"
 	};
 
 	std::vector<std::string> props(numericProps, std::end(numericProps));
