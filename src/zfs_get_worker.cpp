@@ -23,9 +23,9 @@ void ZFSGetWorker::Run(libzfs_handle_t *lzfsh) {
 		return;
 	}
 
-	auto cb = [](int p, void *data)  {
+	auto cb = [](int pr, void *data)  {
 		auto *self = (ZFSGetWorker*) data;
-		auto prop = (zfs_prop_t) p;
+		auto prop = (zfs_prop_t) pr;
 
 		zprop_source_t source;
 		char value_buf[ZFS_MAXPROPLEN];
@@ -34,8 +34,8 @@ void ZFSGetWorker::Run(libzfs_handle_t *lzfsh) {
 		    &source, where_buf, sizeof(where_buf), _B_TRUE) == 0) {
 
 			ZFSProperty p;
+			p.prop = pr;
 			p.name = zfs_prop_to_name(prop);
-			p.is_num = !zfs_prop_is_string(prop);
 			p.value = value_buf;
 
 			// XXX: Export these attributes
@@ -66,10 +66,11 @@ void ZFSGetWorker::HandleOKCallback() {
 	for (auto prop = this->props.begin(); prop != this->props.end(); prop++) {
 		Local<String> key = Nan::New<String>(prop->name).ToLocalChecked();
 		Local<Object> value = Nan::New<Object>();
-		if (prop->is_num) {
+		double val;
+		if (prop->MayBeNumericZFSProperty(&val)) {
 			Nan::Set(value,
 			    Nan::New<String>("value").ToLocalChecked(),
-			    Nan::New<Number>(std::stod(prop->value)));
+			    Nan::New<Number>(val));
 		} else {
 			Nan::Set(value,
 			    Nan::New<String>("value").ToLocalChecked(),

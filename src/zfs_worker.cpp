@@ -5,6 +5,14 @@
 using namespace Nan;
 using namespace v8;
 
+bool ZFSProperty::MayBeNumericZFSProperty(double *num) {
+	if (!zfs_prop_is_string((zfs_prop_t)this->prop)) {
+		char *endptr;
+		*num = strtod(this->value.c_str(),  &endptr);
+		return (*endptr == 0);
+	}
+	return false;
+}
 /*
  * As the time of this writing, there is no reliable way to determine if a zpool
  * property is a numberic property or a string property. Conterary to the case

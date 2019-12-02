@@ -10,10 +10,11 @@ using namespace Nan;
 
 class ZFSProperty {
 	public:
+		bool MayBeNumericZFSProperty(double *);
 		bool MayBeNumericZpoolProperty(double *);
 	public:
+		int		prop;
 		std::string	name;
-		bool		is_num;
 		std::string	value;
 		zprop_source_t	source;
 		std::string	where;

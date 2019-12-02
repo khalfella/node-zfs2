@@ -18,8 +18,8 @@ void ZPoolListWorker::Run(libzfs_handle_t *lzfsh) {
 
 	auto zpool_iter_cb = [](zpool_handle_t *zph, void *data) {
 
-		auto zpool_prop_iter_cb = [](int p, void *data) {
-			auto prop = (zpool_prop_t) p;
+		auto zpool_prop_iter_cb = [](int pr, void *data) {
+			auto prop = (zpool_prop_t) pr;
 			auto *self = (ZPoolListWorker*) data;
 
 			zprop_source_t source;
@@ -31,7 +31,7 @@ void ZPoolListWorker::Run(libzfs_handle_t *lzfsh) {
 				p.value = value_buf;
 
 				// XXX: Make use of these
-				p.is_num = false;
+				p.prop = pr;
 				p.source = source;
 				p.where = "";
 
