@@ -15,6 +15,7 @@ using namespace v8;
 
 NAN_METHOD(zfsGet) {
 	if (info.Length() < 2 || !info[0]->IsObject() || !info[1]->IsFunction()) {
+		Nan::ThrowError("zfsGet(): Invalid input arguments");
 		return;
 	}
 
@@ -28,11 +29,14 @@ NAN_METHOD(zfsGet) {
 		v8::String::Utf8Value str(name->ToString());
 		std::string s(*str, str.length());
 		AsyncQueueWorker(new ZFSGetWorker(cb, s));
+	} else {
+		Nan::ThrowError("zfsGet(): Invalid input arguments");
 	}
 }
 
 NAN_METHOD(zpoolStatus) {
 	if (info.Length() < 2 || !info[0]->IsObject() || !info[1]->IsFunction()) {
+		Nan::ThrowError("zpoolStatus(): Invalid input arguments");
 		return;
 	}
 
@@ -46,12 +50,14 @@ NAN_METHOD(zpoolStatus) {
 		v8::String::Utf8Value str(name->ToString());
 		std::string s(*str, str.length());
 		AsyncQueueWorker(new ZPoolStatusWorker(cb, s));
+	} else {
+		Nan::ThrowError("zpoolStatus(): Invalid input arguments");
 	}
 }
 
 NAN_METHOD(zpoolList) {
 	if (info.Length() != 1 || !info[0]->IsFunction()) {
-		// should return an error in this case or do something.
+		Nan::ThrowError("zpoolList(): Invalid input arguments");
 		return;
 	}
 

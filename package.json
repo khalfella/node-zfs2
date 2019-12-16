@@ -2,11 +2,12 @@
   "name": "zfs2",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./build/Release/zfs2",
+  "gypfile": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Mohamed Khalfella <khalfella@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "nan": "^2.14.0"
