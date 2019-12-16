@@ -14,42 +14,45 @@ using namespace v8;
 
 
 NAN_METHOD(zfsGet) {
-	if (info.Length() < 2 || !info[0]->IsObject() || !info[1]->IsFunction()) {
+	Local<Object> opts;
+	if (info.Length() < 2 ||
+	    !Nan::To<Object>(info[0]).ToLocal(&opts) ||
+	    !info[1]->IsFunction()) {
+
 		Nan::ThrowError("zfsGet(): Invalid input arguments");
 		return;
 	}
 
-	Local<Object> opts = info[0]->ToObject();
         Local<String> name_prop = Nan::New<String>("name").ToLocalChecked();
 
 	Local<v8::Value> name;
-        if (Nan::Get(opts, name_prop).ToLocal(&name) && name->IsString()) {
+        if (Nan::Get(opts, name_prop).ToLocal(&name) &&  name->IsString()) {
 		Nan::Callback *cb = new Nan::Callback(To<Function>(info[1])
 		    .ToLocalChecked());
-		v8::String::Utf8Value str(name->ToString());
-		std::string s(*str, str.length());
-		AsyncQueueWorker(new ZFSGetWorker(cb, s));
+		auto dsname = Nan::To<v8::String>(name).ToLocalChecked();
+		AsyncQueueWorker(new ZFSGetWorker(cb, *Nan::Utf8String(dsname)));
 	} else {
 		Nan::ThrowError("zfsGet(): Invalid input arguments");
 	}
 }
 
 NAN_METHOD(zpoolStatus) {
-	if (info.Length() < 2 || !info[0]->IsObject() || !info[1]->IsFunction()) {
+	Local<Object> opts;
+	if (info.Length() < 2 ||
+	    !Nan::To<Object>(info[0]).ToLocal(&opts) ||
+	    !info[1]->IsFunction()) {
 		Nan::ThrowError("zpoolStatus(): Invalid input arguments");
 		return;
 	}
 
-	Local<Object> opts = info[0]->ToObject();
 	Local<String> name_prop = Nan::New<String>("name").ToLocalChecked();
 
 	Local<v8::Value> name;
 	if (Nan::Get(opts, name_prop).ToLocal(&name) && name->IsString()) {
 		Nan::Callback *cb = new Nan::Callback(To<Function>(info[1])
 		    .ToLocalChecked());
-		v8::String::Utf8Value str(name->ToString());
-		std::string s(*str, str.length());
-		AsyncQueueWorker(new ZPoolStatusWorker(cb, s));
+		auto pname = Nan::To<v8::String>(name).ToLocalChecked();
+		AsyncQueueWorker(new ZPoolStatusWorker(cb, *Nan::Utf8String(pname)));
 	} else {
 		Nan::ThrowError("zpoolStatus(): Invalid input arguments");
 	}
