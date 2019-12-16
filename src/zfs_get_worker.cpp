@@ -15,11 +15,12 @@ ZFSGetWorker::ZFSGetWorker(Nan::Callback *callback, std::string name)
 void ZFSGetWorker::Run(libzfs_handle_t *lzfsh) {
 
 	if (lzfsh == NULL) {
-		this->errorMessage = "error initialized libzfs";
+		this->errorMessage = "Error initializing libzfs";
 		return;
 	}
-	if ((this->zfsh = zfs_open(lzfsh, this->name.c_str(), ZFS_TYPE_DATASET)) == NULL) {
-		this->errorMessage = "error initialized libzfs";
+	if ((this->zfsh = zfs_open(lzfsh, this->name.c_str(),
+	    ZFS_TYPE_DATASET)) == NULL) {
+		this->errorMessage = "Failed to open dataset: " + this->name;
 		return;
 	}
 

@@ -12,7 +12,7 @@ ZPoolListWorker::ZPoolListWorker(Nan::Callback *callback) : ZFSWorker(callback) 
 void ZPoolListWorker::Run(libzfs_handle_t *lzfsh) {
 
 	if (lzfsh == NULL) {
-		this->errorMessage = "error initializing libzfs";
+		this->errorMessage = "Error initializing libzfs";
 		return;
 	}
 
@@ -24,8 +24,8 @@ void ZPoolListWorker::Run(libzfs_handle_t *lzfsh) {
 
 			zprop_source_t source;
 			char value_buf[ZFS_MAXPROPLEN];
-			if (zpool_get_prop(self->cur_zph, prop, value_buf, sizeof (value_buf),
-			    &source, _B_TRUE) == 0) {
+			if (zpool_get_prop(self->cur_zph, prop, value_buf,
+			    sizeof (value_buf), &source, _B_TRUE) == 0) {
 				ZFSProperty p;
 				p.name = zpool_prop_to_name(prop);
 				p.value = value_buf;

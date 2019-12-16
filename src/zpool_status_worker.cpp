@@ -15,17 +15,17 @@ void ZPoolStatusWorker::Run(libzfs_handle_t *lzfsh) {
 	zpool_handle_t *zph;
 
 	if (lzfsh == NULL) {
-		this->errorMessage = "error initializing libzfs";
+		this->errorMessage = "Error initializing libzfs";
 		return;
 	}
 	if ((zph = zpool_open(lzfsh, this->name.c_str())) == NULL) {
-		this->errorMessage = "filed to open the pool";
+		this->errorMessage = "Filed to open: " + this->name;
 		return;
 	}
 
 	char buf[ZFS_MAXPROPLEN];
 	if (zpool_get_prop(zph, ZPOOL_PROP_HEALTH, buf, sizeof(buf), NULL, _B_TRUE) != 0) {
-		this->errorMessage = "filed to get pool health state";
+		this->errorMessage = "Filed to get pool health state: " + this->name;
 		zpool_close(zph);
 		return;
 	}
