@@ -5,6 +5,39 @@
 using namespace Nan;
 using namespace v8;
 
+std::string ZFSProperty::SourceToString() {
+	switch(this->source) {
+		case ZPROP_SRC_NONE:
+			return "-";
+		break;
+		case ZPROP_SRC_DEFAULT:
+			return "default";
+		break;
+		case ZPROP_SRC_TEMPORARY:
+			return "temporary";
+		break;
+		case ZPROP_SRC_LOCAL:
+			return "local";
+		break;
+		case ZPROP_SRC_INHERITED:
+			return "inherited";
+		break;
+		case ZPROP_SRC_RECEIVED:
+			return "received";
+		break;
+		default:
+			return "unknown";
+		break;
+	}
+}
+
+std::string ZFSProperty::WhereToString() {
+	if (this->source == ZPROP_SRC_INHERITED) {
+		return this->where;
+	}
+	return "";
+}
+
 bool ZFSProperty::MayBeNumericZFSProperty(double *num) {
 	if (!zfs_prop_is_string((zfs_prop_t)this->prop)) {
 		char *endptr;

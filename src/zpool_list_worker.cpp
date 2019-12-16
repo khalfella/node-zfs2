@@ -29,10 +29,10 @@ void ZPoolListWorker::Run(libzfs_handle_t *lzfsh) {
 				ZFSProperty p;
 				p.name = zpool_prop_to_name(prop);
 				p.value = value_buf;
-
-				// XXX: Make use of these
-				p.prop = pr;
 				p.source = source;
+
+				// Not used
+				p.prop = pr;
 				p.where = "";
 
 				self->cur_zprops->push_back(p);
@@ -81,6 +81,10 @@ void ZPoolListWorker::HandleOKCallback() {
 				    Nan::New<String>("value").ToLocalChecked(),
 				    Nan::New<String>(prop->value.c_str()).ToLocalChecked());
 			}
+
+			Nan::Set(value,
+			    Nan::New<String>("source").ToLocalChecked(),
+			    Nan::New<String>(prop->SourceToString().c_str()).ToLocalChecked());
 
 			Nan::Set(props,  key, value);
 		}

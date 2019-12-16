@@ -38,8 +38,6 @@ void ZFSGetWorker::Run(libzfs_handle_t *lzfsh) {
 			p.prop = pr;
 			p.name = zfs_prop_to_name(prop);
 			p.value = value_buf;
-
-			// XXX: Export these attributes
 			p.source = source;
 			p.where = where_buf;
 
@@ -77,6 +75,13 @@ void ZFSGetWorker::HandleOKCallback() {
 			    Nan::New<String>("value").ToLocalChecked(),
 			    Nan::New<String>(prop->value.c_str()).ToLocalChecked());
 		}
+
+		Nan::Set(value,
+		    Nan::New<String>("source").ToLocalChecked(),
+		    Nan::New<String>(prop->SourceToString().c_str()).ToLocalChecked());
+		Nan::Set(value,
+		    Nan::New<String>("where").ToLocalChecked(),
+		    Nan::New<String>(prop->WhereToString().c_str()).ToLocalChecked());
 
 		Nan::Set(props,  key, value);
 	}

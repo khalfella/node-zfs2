@@ -12,6 +12,8 @@ class ZFSProperty {
 	public:
 		bool MayBeNumericZFSProperty(double *);
 		bool MayBeNumericZpoolProperty(double *);
+		std::string SourceToString();
+		std::string WhereToString();
 	public:
 		int		prop;
 		std::string	name;
