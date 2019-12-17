@@ -1,7 +1,9 @@
 {
   "name": "zfs2",
   "version": "1.0.0",
-  "description": "",
+  "description": "libzfs C++ Addon",
+  "homepage": "https://github.com/khalfella/node-zfs2",
+  "engines": { "node": ">=0.10.48" },
   "main": "./build/Release/zfs2",
   "gypfile": true,
   "scripts": {
