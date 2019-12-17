@@ -2,7 +2,6 @@
 #define __ZPOOL_STATUS_WORKER__
 
 #include <nan.h>
-#include <libzfs.h>
 #include <mutex>
 
 #include "zfs_worker.h"
@@ -12,8 +11,8 @@ using namespace Nan;
 
 class ZPoolStatusWorker : public ZFSWorker {
 	public:
-		ZPoolStatusWorker(Nan::Callback *callback, std::string name);
-		void Run(libzfs_handle_t *);
+		ZPoolStatusWorker(Nan::Callback *, std::string);
+		void Run(ZFSWorkerLibZFSHandle *);
 		void HandleOKCallback();
 	private:
 		std::string name;

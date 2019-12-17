@@ -88,8 +88,49 @@ void ZFSWorker::Execute() {
 	this->Run(ZFSWorker::lzfsh);
 }
 
-void ZFSWorker::Run(libzfs_handle_t *lzfsh) {
+void ZFSWorker::Run(ZFSWorkerLibZFSHandle *lzfsh) {
 }
+
+ZFSWorkerZFSHandle *ZFSWorker::ZFSOpen(ZFSWorkerLibZFSHandle *lzfsh, const char *path, int types) {
+	return zfs_open(lzfsh, path, types);
+}
+
+void ZFSWorker::ZFSClose(ZFSWorkerZFSHandle *lzfs) {
+	zfs_close(lzfs);
+}
+
+int ZFSWorker::ZFSPropGet(ZFSWorkerZFSHandle *zfsh, ZFSWorkerZFSProp prop, char *propbuf,
+    size_t proplen, ZFSWorkerZPropSource *src, char *statbuf, size_t statlen, bool literal) {
+
+	auto _literal = literal ? _B_TRUE: _B_FALSE;
+	return zfs_prop_get(zfsh, prop, propbuf, proplen, src, statbuf, statlen, _literal);
+}
+
+const char *ZFSWorker::ZFSPropToName(ZFSWorkerZFSProp prop) {
+	return zfs_prop_to_name(prop);
+}
+
+int ZFSWorker::ZFSPropIter(ZFSWorkerZFSPropFunc func, void *cb, bool show_all,
+    bool ordered, ZFSWorkerZFSType type) {
+	auto _show_all = show_all? _B_TRUE : _B_FALSE;
+	auto _ordered = ordered? _B_TRUE : _B_FALSE;
+	return zprop_iter(func, cb, _show_all, _ordered, type);
+}
+
+ZFSWorkerZPoolHandle *ZFSWorker::ZPoolOpen(ZFSWorkerLibZFSHandle *lzfsh, const char *pname) {
+	return zpool_open(lzfsh, pname);
+}
+
+void ZFSWorker::ZPoolClose(ZFSWorkerZPoolHandle *zph) {
+	zpool_close(zph);
+}
+
+int ZFSWorker::ZPoolGetProp(ZFSWorkerZPoolHandle *zph, ZFSWorkerZPoolProp prop, char *buf,
+    size_t len, ZFSWorkerZPropSource *src, bool literal) {
+	auto _literal = literal? _B_TRUE: _B_FALSE;
+	return zpool_get_prop(zph, prop, buf, len, src, _literal);
+}
+
 
 void ZFSWorker::InitializeLibZFS() {
 	std::lock_guard<std::mutex> lck(ZFSWorker::lzfsLock);

@@ -12,26 +12,28 @@ ZPoolStatusWorker::ZPoolStatusWorker(Nan::Callback *callback, std::string name) 
 
 
 void ZPoolStatusWorker::Run(libzfs_handle_t *lzfsh) {
-	zpool_handle_t *zph;
+	ZFSWorkerZPoolHandle *zph;
 
 	if (lzfsh == NULL) {
 		this->errorMessage = "Error initializing libzfs";
 		return;
 	}
-	if ((zph = zpool_open(lzfsh, this->name.c_str())) == NULL) {
+	if ((zph = ZFSWorker::ZPoolOpen(lzfsh, this->name.c_str())) == NULL) {
 		this->errorMessage = "Filed to open: " + this->name;
 		return;
 	}
 
-	char buf[ZFS_MAXPROPLEN];
-	if (zpool_get_prop(zph, ZPOOL_PROP_HEALTH, buf, sizeof(buf), NULL, _B_TRUE) != 0) {
+	char buf[ZFSWorkerZFSMaxPropLen];
+	if (ZFSWorker::ZPoolGetProp(zph, ZFSWorkerZPoolPropHealth,
+	    buf, sizeof(buf), NULL, true) != 0) {
+
 		this->errorMessage = "Filed to get pool health state: " + this->name;
-		zpool_close(zph);
+		ZFSWorker::ZPoolClose(zph);
 		return;
 	}
 
 	this->state = buf;
-	zpool_close(zph);
+	ZFSWorker::ZPoolClose(zph);
 }
 
 void ZPoolStatusWorker::HandleOKCallback() {

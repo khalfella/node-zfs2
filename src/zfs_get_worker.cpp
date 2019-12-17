@@ -12,42 +12,42 @@ ZFSGetWorker::ZFSGetWorker(Nan::Callback *callback, std::string name)
 }
 
 
-void ZFSGetWorker::Run(libzfs_handle_t *lzfsh) {
+void ZFSGetWorker::Run(ZFSWorkerLibZFSHandle *lzfsh) {
 
 	if (lzfsh == NULL) {
 		this->errorMessage = "Error initializing libzfs";
 		return;
 	}
-	if ((this->zfsh = zfs_open(lzfsh, this->name.c_str(),
-	    ZFS_TYPE_DATASET)) == NULL) {
+	if ((this->zfsh = ZFSWorker::ZFSOpen(lzfsh, this->name.c_str(),
+	    ZFSWorkerZFSTypeDataset)) == NULL) {
 		this->errorMessage = "Failed to open dataset: " + this->name;
 		return;
 	}
 
 	auto cb = [](int pr, void *data)  {
 		auto self = (ZFSGetWorker*) data;
-		auto prop = (zfs_prop_t) pr;
+		auto prop = (ZFSWorkerZFSProp) pr;
 
-		zprop_source_t source;
-		char value_buf[ZFS_MAXPROPLEN];
-		char where_buf[ZFS_MAXPROPLEN];
-		if (zfs_prop_get(self->zfsh, prop, value_buf, sizeof(value_buf),
-		    &source, where_buf, sizeof(where_buf), _B_TRUE) == 0) {
+		ZFSWorkerZPropSource source;
+		char value_buf[ZFSWorkerZFSMaxPropLen];
+		char where_buf[ZFSWorkerZFSMaxPropLen];
+		if (ZFSWorker::ZFSPropGet(self->zfsh, prop, value_buf, sizeof(value_buf),
+		    &source, where_buf, sizeof(where_buf), true) == 0) {
 
 			ZFSProperty p;
 			p.prop = pr;
-			p.name = zfs_prop_to_name(prop);
+			p.name = ZFSWorker::ZFSPropToName(prop);
 			p.value = value_buf;
 			p.source = source;
 			p.where = where_buf;
 
 			self->props.push_back(p);
 		}
-		return ((int)ZPROP_CONT);
+		return ((int)ZFSWorkerZFSPropCont);
 	};
 
-	zprop_iter(cb, this, _B_TRUE, _B_TRUE, (zfs_type_t) ZFS_TYPE_DATASET);
-	zfs_close(zfsh);
+	ZFSWorker::ZFSPropIter(cb, this, true, true, (ZFSWorkerZFSType) ZFSWorkerZFSTypeDataset);
+	ZFSWorker::ZFSClose(zfsh);
 }
 
 void ZFSGetWorker::HandleOKCallback() {

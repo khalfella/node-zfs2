@@ -5,7 +5,6 @@
 #include <nan.h>
 #include <map>
 #include <mutex>
-#include <libzfs.h>
 
 #include "zfs_worker.h"
 
@@ -14,13 +13,13 @@ using namespace Nan;
 
 class ZFSGetWorker : public ZFSWorker {
 	public:
-		ZFSGetWorker(Nan::Callback *callback, std::string name);
-		void Run(libzfs_handle_t *);
+		ZFSGetWorker(Nan::Callback *, std::string);
+		void Run(ZFSWorkerLibZFSHandle *);
 		void HandleOKCallback();
 	private:
 		std::string name;
 		std::string errorMessage;
-		zfs_handle_t *zfsh;
+		ZFSWorkerZFSHandle *zfsh;
 		std::vector<ZFSProperty> props;
 };
 
