@@ -25,7 +25,7 @@ void ZFSGetWorker::Run(libzfs_handle_t *lzfsh) {
 	}
 
 	auto cb = [](int pr, void *data)  {
-		auto *self = (ZFSGetWorker*) data;
+		auto self = (ZFSGetWorker*) data;
 		auto prop = (zfs_prop_t) pr;
 
 		zprop_source_t source;

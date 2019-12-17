@@ -20,7 +20,7 @@ void ZPoolListWorker::Run(libzfs_handle_t *lzfsh) {
 
 		auto zpool_prop_iter_cb = [](int pr, void *data) {
 			auto prop = (zpool_prop_t) pr;
-			auto *self = (ZPoolListWorker*) data;
+			auto self = (ZPoolListWorker*) data;
 
 			zprop_source_t source;
 			char value_buf[ZFS_MAXPROPLEN];

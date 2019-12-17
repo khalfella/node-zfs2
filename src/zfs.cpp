@@ -59,12 +59,13 @@ NAN_METHOD(zpoolStatus) {
 }
 
 NAN_METHOD(zpoolList) {
-	if (info.Length() != 1 || !info[0]->IsFunction()) {
-		Nan::ThrowError("zpoolList(): Invalid input arguments");
+	// The first argument is not used. It is reserved for future use.
+	if (info.Length() < 2 || !info[0]->IsObject() || !info[1]->IsFunction()) {
+		Nan::ThrowError("zpoolStatus(): Invalid input arguments");
 		return;
 	}
 
-	Nan::Callback *cb = new Nan::Callback(To<Function>(info[0]).ToLocalChecked());
+	Nan::Callback *cb = new Nan::Callback(To<Function>(info[1]).ToLocalChecked());
 	AsyncQueueWorker(new ZPoolListWorker(cb));
 }
 
